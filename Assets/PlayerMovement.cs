@@ -11,15 +11,22 @@ public class PlayerMovement : MonoBehaviour
 
     //Global variables
     private Rigidbody2D player;
+    private BoxCollider2D coll;
+    [SerializeField] private LayerMask jumpableGround;
     private SpriteRenderer spriteRenderer;
     private Animator animator;
     private enum MovementState {idle, run, jump, fall}
+
+    float distToGround = 0f;
     
     void Start()
     {
         player = GetComponent<Rigidbody2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         animator = GetComponent<Animator>();
+        coll = GetComponent<BoxCollider2D>();
+
+        distToGround = coll.bounds.extents.y;
     }
 
     
@@ -28,7 +35,7 @@ public class PlayerMovement : MonoBehaviour
         dirX = Input.GetAxisRaw("Horizontal");
         player.velocity = new Vector2(dirX * moveSpeed, player.velocity.y);
 
-        if (Input.GetButtonDown("Jump")) {
+        if (Input.GetButtonDown("Jump") && isGround()) {
             player.velocity = new Vector2(player.velocity.x, jumpForce);
         }
 
@@ -55,5 +62,11 @@ public class PlayerMovement : MonoBehaviour
         }
 
         animator.SetInteger("state", (int)state);
+    }
+
+    private bool isGround() {
+        return Physics2D.BoxCast(coll.bounds.center, coll.bounds.size, 0f, Vector2.down, .1f, jumpableGround);
+        //return Physics2D.Raycast(transform.position, -Vector3.up, distToGround + 0.1f);
+        //return Physics2D.Raycast(coll.bounds.center, Vector2.down, coll.bounds.extents.y);
     }
 }
